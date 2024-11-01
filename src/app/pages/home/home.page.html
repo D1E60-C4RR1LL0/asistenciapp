@@ -22,13 +22,11 @@
 
   <!-- Contenido exclusivo para Profesor -->
   <ng-container *ngIf="userRole === 'profesor' || userRole === 'admin'">
-    <ion-button routerLink="/profesor-clases">Mis Clases</ion-button>
-    <ion-button routerLink="/profesor-asistencia">Registro de Asistencia</ion-button>
+    <ion-button routerLink="/asignaturas">Asignaturas</ion-button>
   </ng-container>
 
   <!-- Contenido exclusivo para Alumno -->
   <ng-container *ngIf="userRole === 'alumno' || userRole === 'admin'">
-    <ion-button routerLink="/alumno-clases">Mis Clases</ion-button>
-    <ion-button routerLink="/alumno-asistencia">Historial de Asistencia</ion-button>
+    <ion-button routerLink="/misclases">MisClases</ion-button>
   </ng-container>
 </ion-content>
