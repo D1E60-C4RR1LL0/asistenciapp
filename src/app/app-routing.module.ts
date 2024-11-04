@@ -36,6 +36,10 @@ const routes: Routes = [
   {
     path: 'lectorqr',
     loadChildren: () => import('./pages/lectorqr/lectorqr.module').then( m => m.LectorqrPageModule)
+  },
+  {
+    path: 'detalleclase/:id',
+    loadChildren: () => import('./pages/detalleclase/detalleclase.module').then( m => m.DetalleclasePageModule)
   }
 ];
 

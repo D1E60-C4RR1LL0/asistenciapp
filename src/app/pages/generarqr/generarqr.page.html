@@ -1,13 +1,14 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>generarqr</ion-title>
+    <ion-title>Generar Código QR</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">generarqr</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding">
+  <div *ngIf="qrCodeUrl">
+    <h2>Código QR para Asistencia</h2>
+    <img [src]="qrCodeUrl" alt="QR Code"/>
+    <p>ID de la clase: {{ classId }}</p>
+  </div>
+  <p *ngIf="!qrCodeUrl">Generando código QR...</p>
 </ion-content>

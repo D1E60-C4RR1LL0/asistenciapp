@@ -6,10 +6,11 @@
 
 <ion-content class="ion-padding">
   <ion-list>
-    <ion-item *ngFor="let asignatura of asignaturas" [routerLink]="['/generarqr', asignatura.id]">
+    <ion-item *ngFor="let asignatura of asignaturas" [routerLink]="['/detalleclase', asignatura.id]">
       <ion-label>
         <h2>{{ asignatura.nombre }}</h2>
       </ion-label>
     </ion-item>
   </ion-list>
 </ion-content>
+

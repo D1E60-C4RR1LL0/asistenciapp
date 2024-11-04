@@ -5,19 +5,15 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <h2>Mis Clases</h2>
-  
+  <h2>Asignaturas</h2>
+
+  <!-- Lista de Clases -->
   <ion-list>
-    <ion-item *ngFor="let clase of classes" [routerLink]="['/lectorqr', clase.id]">
+    <ion-item *ngFor="let clase of clases">
       <ion-label>
         <h2>{{ clase.nombre }}</h2>
-        <p>ID de Clase: {{ clase.id }}</p>
+        <p>{{ clase.codigo }}</p>
       </ion-label>
     </ion-item>
   </ion-list>
-
-  <ng-container>
-    <ion-button routerLink="/lectorqr">Lector QR</ion-button>
-  </ng-container>
-
 </ion-content>

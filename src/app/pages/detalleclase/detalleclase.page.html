@@ -1,0 +1,20 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Detalles de la Clase</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <h2>Alumnos en esta clase</h2>
+
+  <ion-list>
+    <ion-item *ngFor="let alumno of alumnos">
+      <ion-label>
+        <h3>{{ alumno.name }}</h3>
+        <p>Email: {{ alumno.email }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <p *ngIf="alumnos.length === 0">No hay alumnos inscritos en esta clase.</p>
+</ion-content>
