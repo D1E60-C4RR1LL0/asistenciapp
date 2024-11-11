@@ -4,17 +4,17 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { LectorqrPageRoutingModule } from './lectorqr-routing.module';
+import { DetalleramoPageRoutingModule } from './detalleramo-routing.module';
 
-import { LectorqrPage } from './lectorqr.page';
+import { DetalleramoPage } from './detalleramo.page';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    LectorqrPageRoutingModule
+    DetalleramoPageRoutingModule
   ],
-  declarations: [LectorqrPage]
+  declarations: [DetalleramoPage]
 })
-export class LectorqrPageModule {}
+export class DetalleramoPageModule {}

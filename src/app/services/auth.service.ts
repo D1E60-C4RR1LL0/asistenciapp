@@ -78,4 +78,20 @@ export class AuthService {
         await this.afAuth.signOut();
         this.router.navigate(['/login']);
     }
+
+    async registrarAsistencia(alumnoId: string, classId: string, status: string) {
+        const attendanceData = {
+            alumnoId: alumnoId,
+            classId: classId,
+            date: new Date(),  // Fecha actual
+            status: status
+        };
+
+        try {
+            await this.firestore.collection('attendance').add(attendanceData);
+            console.log("Asistencia registrada exitosamente");
+        } catch (error) {
+            console.error("Error al registrar asistencia:", error);
+        }
+    }
 }

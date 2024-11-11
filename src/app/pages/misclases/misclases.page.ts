@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-misclases',
@@ -10,7 +11,7 @@ import { AuthService } from '../../services/auth.service';
 export class MisclasesPage implements OnInit {
   clases: any[] = [];
 
-  constructor(private firestore: AngularFirestore, private authService: AuthService) {}
+  constructor(private firestore: AngularFirestore, private authService: AuthService, private router: Router) {}
 
   async ngOnInit() {
     const alumnoId = await this.authService.getCurrentUserId();
@@ -23,5 +24,9 @@ export class MisclasesPage implements OnInit {
         console.log("Clases encontradas:", clasesData);  // Verifica las clases obtenidas
         this.clases = clasesData;
       });
+  }
+  
+  verDetalles(classId: string) {
+    this.router.navigate(['/detalleramo', classId]);
   }
 }

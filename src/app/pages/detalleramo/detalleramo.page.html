@@ -1,0 +1,25 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Detalles de Clase</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <h2>{{ clase?.nombre }}</h2>
+  <p>Profesor: {{ profesorNombre }}</p>
+
+  <ion-list>
+    <ion-item *ngFor="let asistencia of asistencias">
+      <ion-label>
+        <h3>{{ asistencia.date.toDate() | date: 'longDate' }}</h3>
+        <p>Estado: {{ asistencia.status }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="marcarAsistencia()">
+      <ion-icon name="qr-code-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

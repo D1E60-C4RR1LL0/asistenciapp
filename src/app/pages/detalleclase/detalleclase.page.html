@@ -1,20 +1,33 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Detalles de la Clase</ion-title>
+    <ion-title>Detalles de Clase</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <h2>Alumnos en esta clase</h2>
+  <h2>{{ clase?.nombre }}</h2>
+  <p>Profesor: {{ profesorNombre }}</p>
+
+  <ion-button expand="full" (click)="activarAsistencia()">
+    {{ clase?.qrDisponible ? 'Desactivar Asistencia' : 'Activar Asistencia' }}
+  </ion-button>
+
+  <ion-button expand="full" color="secondary" (click)="generarCodigoQR()">
+    Generar Código QR para la Clase
+  </ion-button>
+
+  <div *ngIf="qrCodeUrl" class="qr-container">
+    <img [src]="qrCodeUrl" alt="Código QR de la Clase" />
+  </div>
+
+  <ion-item-divider color="light">Listado de Estudiantes</ion-item-divider>
 
   <ion-list>
-    <ion-item *ngFor="let alumno of alumnos">
+    <ion-item *ngFor="let alumno of alumnos" detail="true">
       <ion-label>
-        <h3>{{ alumno.name }}</h3>
-        <p>Email: {{ alumno.email }}</p>
+        <h2>{{ alumno.email }}</h2>
       </ion-label>
+      <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
     </ion-item>
   </ion-list>
-
-  <p *ngIf="alumnos.length === 0">No hay alumnos inscritos en esta clase.</p>
 </ion-content>

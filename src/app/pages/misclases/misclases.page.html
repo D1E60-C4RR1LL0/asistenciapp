@@ -5,14 +5,11 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <h2>Asignaturas</h2>
-
-  <!-- Lista de Clases -->
+  <h2>Mis Clases</h2>
   <ion-list>
-    <ion-item *ngFor="let clase of clases">
+    <ion-item *ngFor="let clase of clases" (click)="verDetalles(clase.id)">
       <ion-label>
         <h2>{{ clase.nombre }}</h2>
-        <p>{{ clase.codigo }}</p>
       </ion-label>
     </ion-item>
   </ion-list>

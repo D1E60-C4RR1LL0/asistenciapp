@@ -1,0 +1,16 @@
+.qr-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.qr-container img {
+    width: 200px;
+    height: 200px;
+}
+
+.asistencias-container {
+    margin-left: 20px;
+    border-left: 2px solid #ccc;
+    padding-left: 15px;
+}

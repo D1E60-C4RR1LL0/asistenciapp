@@ -34,12 +34,12 @@ const routes: Routes = [
     loadChildren: () => import('./pages/generarqr/generarqr.module').then( m => m.GenerarqrPageModule)
   },
   {
-    path: 'lectorqr',
-    loadChildren: () => import('./pages/lectorqr/lectorqr.module').then( m => m.LectorqrPageModule)
-  },
-  {
     path: 'detalleclase/:id',
     loadChildren: () => import('./pages/detalleclase/detalleclase.module').then( m => m.DetalleclasePageModule)
+  },
+  {
+    path: 'detalleramo/:id',
+    loadChildren: () => import('./pages/detalleramo/detalleramo.module').then( m => m.DetalleramoPageModule)
   }
 ];
 
