@@ -10,6 +10,7 @@ interface Clase {
   nombre: string;
   qrDisponible?: boolean;
   idProfesor?: string[];
+  currentSession?: string | null;  // Asegúrate de que esta línea esté presente
 }
 
 @Component({
@@ -38,7 +39,19 @@ export class DetalleramoPage implements OnInit {
     this.alumnoId = await this.authService.getCurrentUserId() || '';
     const supportResult = await BarcodeScanner.isSupported();
     this.isSupported = supportResult.supported;
+
+    // Cargar detalles de la clase una vez
     this.cargarDetallesClase();
+
+    // Escuchar los cambios en la asistencia del alumno en tiempo real
+    this.firestore.collection('attendance', ref =>
+      ref.where('classId', '==', this.classId)
+        .where('alumnoId', '==', this.alumnoId)
+    ).valueChanges().subscribe(asistencias => {
+      this.asistencias = asistencias;
+    });
+
+    // Escucha cambios en tiempo real del documento de la clase
     this.firestore.collection('classes').doc(this.classId).valueChanges().subscribe((doc: any) => {
       if (doc) {
         this.clase = doc as Clase;
@@ -57,15 +70,6 @@ export class DetalleramoPage implements OnInit {
         const profesorDoc = await this.firestore.collection('users').doc(profesorId).get().toPromise();
         this.profesorNombre = (profesorDoc?.data() as { name?: string })?.name || 'Desconocido';
       }
-
-      const asistenciasSnapshot = await this.firestore.collection('attendance', ref =>
-        ref.where('classId', '==', this.classId)
-          .where('alumnoId', '==', this.alumnoId)
-      ).get().toPromise();
-
-      if (asistenciasSnapshot) {
-        this.asistencias = asistenciasSnapshot.docs.map(doc => doc.data());
-      }
     }
   }
 
@@ -76,15 +80,31 @@ export class DetalleramoPage implements OnInit {
         this.presentAlert('Permiso denegado', 'Para usar la aplicación, autorizar los permisos de cámara.');
         return;
       }
-
+  
       const { barcodes } = await BarcodeScanner.scan();
+      console.log('Código QR escaneado:', barcodes[0].rawValue);
       if (barcodes.length > 0 && barcodes[0].rawValue === this.classId) {
-        await this.firestore.collection('attendance').add({
-          alumnoId: this.alumnoId,
-          classId: this.classId,
-          date: new Date(),
-          status: 'Presente'
-        });
+        // Obtén el ID de la sesión activa desde la clase
+        const sessionId = this.clase?.currentSession;
+        if (!sessionId) {
+          console.error('No se ha definido el ID de la sesión activa.');
+          return;
+        }
+  
+        // Registrar asistencia en la subcolección 'attendance' dentro de la sesión activa
+        await this.firestore
+          .collection('classes')
+          .doc(this.classId)
+          .collection('sessions')
+          .doc(sessionId)
+          .collection('attendance')
+          .doc(this.alumnoId)
+          .set({
+            alumnoId: this.alumnoId,
+            date: new Date(),
+            status: 'Presente'
+          });
+  
         this.presentAlert('Asistencia Registrada', 'Tu asistencia ha sido registrada exitosamente.');
       } else {
         this.presentAlert('Error', 'Código QR no válido para esta clase.');
@@ -93,6 +113,9 @@ export class DetalleramoPage implements OnInit {
       this.presentAlert('Asistencia No Disponible', 'El profesor no ha activado la validación de asistencia.');
     }
   }
+  
+  
+  
 
   async requestPermissions(): Promise<boolean> {
     const { camera } = await BarcodeScanner.requestPermissions();

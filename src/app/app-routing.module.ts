@@ -40,6 +40,10 @@ const routes: Routes = [
   {
     path: 'detalleramo/:id',
     loadChildren: () => import('./pages/detalleramo/detalleramo.module').then( m => m.DetalleramoPageModule)
+  },
+  {
+    path: 'asistencias/:id',
+    loadChildren: () => import('./pages/asistencias/asistencias.module').then( m => m.AsistenciasPageModule)
   }
 ];
 

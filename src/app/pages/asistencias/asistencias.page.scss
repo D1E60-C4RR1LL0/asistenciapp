@@ -1,0 +1,32 @@
+.alumnos-list {
+    padding-left: 16px;
+    /* Espaciado para la lista de alumnos */
+    padding-right: 16px;
+}
+
+ion-button[color="primary"] {
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+ion-item-divider {
+    background: none;
+    /* Elimina el fondo */
+    margin: 0;
+    /* Remueve el margen extra */
+    padding: 8px 16px;
+    /* Ajusta el padding según tus necesidades */
+    border: none;
+    /* Elimina cualquier borde */
+}
+
+ion-item-divider-wrapper {
+    background: none !important;
+    /* Asegúrate de que el fondo esté desactivado */
+}
+
+ion-item-divider h2,
+ion-item-divider p {
+    color: var(--ion-color-light);
+    /* Cambia el color de texto si es necesario */
+}

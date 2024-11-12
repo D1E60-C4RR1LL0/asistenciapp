@@ -16,6 +16,10 @@
     Generar Código QR para la Clase
   </ion-button>
 
+  <ion-button expand="block" color="secondary" routerLink="/asistencias/{{ classId }}">
+    Ver Asistencias Generales
+  </ion-button>
+
   <div *ngIf="qrCodeUrl" class="qr-container">
     <img [src]="qrCodeUrl" alt="Código QR de la Clase" />
   </div>
