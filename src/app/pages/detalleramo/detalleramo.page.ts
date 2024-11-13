@@ -10,7 +10,7 @@ interface Clase {
   nombre: string;
   qrDisponible?: boolean;
   idProfesor?: string[];
-  currentSession?: string | null;  // Asegúrate de que esta línea esté presente
+  currentSession?: string | null;
 }
 
 @Component({
@@ -40,39 +40,81 @@ export class DetalleramoPage implements OnInit {
     const supportResult = await BarcodeScanner.isSupported();
     this.isSupported = supportResult.supported;
 
-    // Cargar detalles de la clase una vez
-    this.cargarDetallesClase();
-
-    // Escuchar los cambios en la asistencia del alumno en tiempo real
-    this.firestore.collection('attendance', ref =>
-      ref.where('classId', '==', this.classId)
-        .where('alumnoId', '==', this.alumnoId)
-    ).valueChanges().subscribe(asistencias => {
-      this.asistencias = asistencias;
-    });
-
-    // Escucha cambios en tiempo real del documento de la clase
-    this.firestore.collection('classes').doc(this.classId).valueChanges().subscribe((doc: any) => {
-      if (doc) {
-        this.clase = doc as Clase;
-        this.clase.qrDisponible = this.clase.qrDisponible ?? false;
-      }
-    });
+    // Cargar detalles de la clase y la asistencia del alumno una vez
+    await this.cargarDetallesClase();
+    this.cargarHistorialAsistenciasAlumno();
   }
 
   async cargarDetallesClase() {
     const claseDoc = await this.firestore.collection('classes').doc(this.classId).get().toPromise();
     this.clase = claseDoc?.data() as Clase;
+    console.log('Detalles de la clase:', this.clase);
 
     if (this.clase) {
       const profesorId = this.clase.idProfesor ? this.clase.idProfesor[0] : '';
       if (profesorId) {
         const profesorDoc = await this.firestore.collection('users').doc(profesorId).get().toPromise();
         this.profesorNombre = (profesorDoc?.data() as { name?: string })?.name || 'Desconocido';
+        console.log('Nombre del profesor:', this.profesorNombre);
       }
     }
   }
 
+  cargarHistorialAsistenciasAlumno() {
+    this.asistencias = []; // Reiniciar el array de asistencias para almacenar el historial completo
+  
+    // Acceder a todas las sesiones de la clase
+    this.firestore.collection('classes')
+      .doc(this.classId)
+      .collection('sessions')
+      .get()
+      .toPromise()
+      .then(sessionsSnapshot => {
+        if (!sessionsSnapshot) {
+          console.error('No se encontraron sesiones para esta clase.');
+          return;
+        }
+  
+        sessionsSnapshot.forEach(sessionDoc => {
+          const sessionId = sessionDoc.id;
+          const sessionDate = (sessionDoc.data() as { startTime: any }).startTime.toDate();
+  
+          // Para cada sesión, obtener la asistencia del alumno
+          this.firestore.collection('classes')
+            .doc(this.classId)
+            .collection('sessions')
+            .doc(sessionId)
+            .collection('attendance', ref => ref.where('alumnoId', '==', this.alumnoId))
+            .get()
+            .toPromise()
+            .then(attendanceSnapshot => {
+              if (!attendanceSnapshot) {
+                console.error(`No se encontraron registros de asistencia para el alumno en la sesión ${sessionId}.`);
+                return;
+              }
+  
+              attendanceSnapshot.forEach(attendanceDoc => {
+                const attendanceData = attendanceDoc.data() as { status: string; date: any };
+                this.asistencias.push({
+                  date: sessionDate,
+                  status: attendanceData.status
+                });
+              });
+  
+              // Ordenar las asistencias de más reciente a más antigua
+              this.asistencias.sort((a, b) => b.date.getTime() - a.date.getTime());
+            })
+            .catch(error => {
+              console.error('Error al obtener la asistencia del alumno en la sesión:', error);
+            });
+        });
+      })
+      .catch(error => {
+        console.error('Error al cargar las sesiones de la clase:', error);
+      });
+  }
+  
+  
   async marcarAsistencia() {
     if (this.clase?.qrDisponible) {
       const granted = await this.requestPermissions();
@@ -80,18 +122,16 @@ export class DetalleramoPage implements OnInit {
         this.presentAlert('Permiso denegado', 'Para usar la aplicación, autorizar los permisos de cámara.');
         return;
       }
-  
+
       const { barcodes } = await BarcodeScanner.scan();
       console.log('Código QR escaneado:', barcodes[0].rawValue);
       if (barcodes.length > 0 && barcodes[0].rawValue === this.classId) {
-        // Obtén el ID de la sesión activa desde la clase
         const sessionId = this.clase?.currentSession;
         if (!sessionId) {
           console.error('No se ha definido el ID de la sesión activa.');
           return;
         }
-  
-        // Registrar asistencia en la subcolección 'attendance' dentro de la sesión activa
+
         await this.firestore
           .collection('classes')
           .doc(this.classId)
@@ -104,7 +144,7 @@ export class DetalleramoPage implements OnInit {
             date: new Date(),
             status: 'Presente'
           });
-  
+
         this.presentAlert('Asistencia Registrada', 'Tu asistencia ha sido registrada exitosamente.');
       } else {
         this.presentAlert('Error', 'Código QR no válido para esta clase.');
@@ -113,9 +153,6 @@ export class DetalleramoPage implements OnInit {
       this.presentAlert('Asistencia No Disponible', 'El profesor no ha activado la validación de asistencia.');
     }
   }
-  
-  
-  
 
   async requestPermissions(): Promise<boolean> {
     const { camera } = await BarcodeScanner.requestPermissions();

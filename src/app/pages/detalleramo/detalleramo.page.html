@@ -5,13 +5,13 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <h2>{{ clase?.nombre }}</h2>
-  <p>Profesor: {{ profesorNombre }}</p>
+  <h2>{{ clase?.nombre || 'Clase no encontrada' }}</h2>
+  <p>Profesor: {{ profesorNombre || 'Profesor no asignado' }}</p>
 
   <ion-list>
     <ion-item *ngFor="let asistencia of asistencias">
       <ion-label>
-        <h3>{{ asistencia.date.toDate() | date: 'longDate' }}</h3>
+        <h3>Fecha de asistencia: {{ asistencia.date | date: 'longDate' }}</h3>
         <p>Estado: {{ asistencia.status }}</p>
       </ion-label>
     </ion-item>

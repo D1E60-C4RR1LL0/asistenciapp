@@ -34,7 +34,6 @@
 
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import "@ionic/angular/css/palettes/dark.system.css";
 
 :root {
 	--ion-color-primary: #020659;
@@ -100,4 +99,102 @@
 	--ion-color-dark-shade: #011f38;
 	--ion-color-dark-tint: #1a3953;
 
+}
+
+
+
+/* Fondo del contenido */
+ion-content {
+	--background: linear-gradient(to bottom, #ffffff, #F2A516, #012340);
+}
+
+/* Texto de bienvenida con animación de desvanecimiento */
+.welcome-text {
+	font-size: 1.5rem;
+	font-weight: bold;
+	color: var(--ion-color-light);
+	margin-bottom: 20px;
+	opacity: 0;
+	animation: fadeIn 1s forwards;
+	text-align: center;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(-10px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* Estilo de los botones generales */
+ion-button {
+	--border-radius: 12px;
+	--padding: 15px;
+	--font-weight: bold;
+	--text-transform: uppercase;
+	--font-size: 1rem;
+	--box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+	margin: 10px 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+}
+
+
+@keyframes pressEffect {
+	from {
+		transform: scale(1);
+	}
+
+	to {
+		transform: scale(0.95);
+	}
+}
+
+
+/* Icono de Cierre de Sesión */
+ion-icon[name="log-out-outline"] {
+	color: var(--ion-color-danger);
+	font-size: 1.5rem;
+	margin-right: 10px;
+	transition: color 0.3s;
+}
+
+ion-icon[name="log-out-outline"]:hover {
+	color: var(--ion-color-danger-tint);
+}
+
+
+/* Hover y activo para todos los botones */
+ion-button:hover {
+	transform: translateY(-2px);
+}
+
+ion-button:active {
+	transform: scale(0.95);
+}
+
+.custom-loading .loading-md .loading-wrapper {
+	background-color: var(--ion-color-primary);
+	border-radius: 12px;
+	color: var(--ion-color-light-contrast); // Texto en contraste con el fondo
+}
+
+.custom-loading .loading-spinner {
+	--color: var(--ion-color-secondary); // Ícono del spinner en color secundario
+}
+
+ion-header {
+	--background: linear-gradient(to right, var(--ion-color-primary), var(--ion-color-secondary));
+	color: var(--ion-color-primary-contrast);
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+	border-bottom: 1px solid var(--ion-color-primary-tint);
+	font-weight: bold;
+	text-align: center;
 }

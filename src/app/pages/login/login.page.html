@@ -16,7 +16,7 @@
       <ion-input type="password" formControlName="password"></ion-input>
     </ion-item>
 
-    <ion-button expand="full" type="submit" [disabled]="loginForm.invalid">Ingresar</ion-button>
+    <ion-button expand="empty" type="submit" [disabled]="loginForm.invalid">Ingresar</ion-button>
 
     <!-- Mensaje de error -->
     <ion-text color="danger" *ngIf="errorMessage">
@@ -27,6 +27,6 @@
   <!-- Botón de registro para usuarios sin cuenta -->
   <div class="register-link">
     <p>¿No tienes una cuenta?</p>
-    <ion-button expand="full" fill="outline" (click)="goToRegister()">Registrarse</ion-button>
+    <ion-button expand="empty" fill="outline" (click)="goToRegister()">Registrarse</ion-button>
   </div>
 </ion-content>

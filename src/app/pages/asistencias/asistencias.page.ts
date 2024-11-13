@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs/operators';
+import { LoadingService } from '../../services/loading.service';  // Asegúrate de que la ruta sea correcta
 
 interface SesionAsistencia {
   claseNombre: string;
@@ -14,7 +15,6 @@ interface SesionAsistencia {
   sessionId: string; // Agrega sessionId aquí para que sea reconocido
 }
 
-
 @Component({
   selector: 'app-asistencias',
   templateUrl: './asistencias.page.html',
@@ -26,7 +26,8 @@ export class AsistenciasPage implements OnInit {
 
   constructor(
     private firestore: AngularFirestore,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private loadingService: LoadingService  // Inyecta el servicio de carga
   ) {
     this.classId = this.route.snapshot.paramMap.get('id') || '';
   }
@@ -39,6 +40,8 @@ export class AsistenciasPage implements OnInit {
 
   async cargarAsistenciasGenerales() {
     try {
+      await this.loadingService.presentLoading('Cargando asistencias');  // Muestra el spinner
+
       const claseDoc = await this.firestore.collection('classes').doc(this.classId).get().toPromise();
       const claseNombre = (claseDoc?.data() as { nombre?: string })?.nombre || 'Clase Desconocida';
   
@@ -91,12 +94,12 @@ export class AsistenciasPage implements OnInit {
   
           // Ordena las sesiones por fecha (de más reciente a más antigua)
           this.sesiones = sesionesData.sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
+
+          await this.loadingService.dismissLoading();  // Oculta el spinner después de cargar los datos
         });
     } catch (error) {
       console.error('Error al cargar las asistencias generales:', error);
+      await this.loadingService.dismissLoading();  // Asegura que el spinner se oculta en caso de error
     }
   }
-  
-  
-  
 }

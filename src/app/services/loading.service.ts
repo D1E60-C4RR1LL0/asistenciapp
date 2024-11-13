@@ -14,7 +14,8 @@ export class LoadingService {
     if (!this.loading) {
       this.loading = await this.loadingController.create({
         message,
-        spinner: 'crescent',  // Tipo de spinner (personalizable)
+        spinner: 'crescent', // Tipo de spinner
+        cssClass: 'custom-loading' // Clase CSS personalizada
       });
       await this.loading.present();
     }
