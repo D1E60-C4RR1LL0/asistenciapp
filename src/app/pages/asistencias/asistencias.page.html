@@ -5,19 +5,16 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <ion-list>
-    <ion-item *ngFor="let session of sesiones">
-      <ion-label>
-        <h2>{{ session.claseNombre }}</h2>
-        <p>Fecha de Sesión: {{ session.fecha | date: 'longDate' }}</p>
-      </ion-label>
-      
-      <ion-button fill="clear" color="primary" slot="end" (click)="session.showAlumnos = !session.showAlumnos">
-        <ion-icon [name]="session.showAlumnos ? 'caret-up-outline' : 'caret-down-outline'"></ion-icon>
-      </ion-button>
-      
-      <!-- Lista de asistencia plegable -->
-      <ion-list *ngIf="session.showAlumnos" class="alumnos-list">
+  <ion-accordion-group>
+    <ion-accordion *ngFor="let session of sesiones">
+      <ion-item slot="header">
+        <ion-label>
+          <h2>{{ session.claseNombre }} (ID: {{ session.sessionId }})</h2>
+          <p>Fecha de Sesión: {{ session.fecha | date: 'longDate' }}</p>
+        </ion-label>
+      </ion-item>
+
+      <ion-list slot="content">
         <ion-item *ngFor="let alumno of session.alumnos">
           <ion-label>
             <p><strong>Alumno:</strong> {{ alumno.nombre }}</p>
@@ -25,10 +22,9 @@
           </ion-label>
         </ion-item>
       </ion-list>
-
-      <ion-item-divider color="light"></ion-item-divider> <!-- Divisor entre sesiones -->
-    </ion-item>
-  </ion-list>
+    </ion-accordion>
+  </ion-accordion-group>
 </ion-content>
+
 
 

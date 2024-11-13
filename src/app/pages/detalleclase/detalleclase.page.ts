@@ -30,6 +30,8 @@ export class DetalleclasePage implements OnInit {
   alumnos: Alumno[] = [];
   qrCodeData: string = '';
   qrCodeUrl: string = '';
+  showQRCode: boolean = false; // Variable para controlar visibilidad del QR
+
 
   constructor(
     private route: ActivatedRoute,
@@ -183,8 +185,11 @@ export class DetalleclasePage implements OnInit {
   
 
   async generarCodigoQR() {
-    this.qrCodeData = this.classId;
-    this.qrCodeUrl = await QRCode.toDataURL(this.qrCodeData);
+    if (!this.qrCodeUrl) {
+      this.qrCodeData = this.classId;
+      this.qrCodeUrl = await QRCode.toDataURL(this.qrCodeData);
+    }
+    this.showQRCode = !this.showQRCode; // Alterna la visibilidad del QR
   }
 
   async presentAlert(header: string, message: string) {

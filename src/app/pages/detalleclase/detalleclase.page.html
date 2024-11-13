@@ -13,25 +13,16 @@
   </ion-button>
 
   <ion-button expand="full" color="secondary" (click)="generarCodigoQR()">
-    Generar Código QR para la Clase
+    {{ showQRCode ? 'Ocultar Código QR' : 'Generar Código QR para la Clase' }}
   </ion-button>
 
   <ion-button expand="block" color="secondary" routerLink="/asistencias/{{ classId }}">
     Ver Asistencias Generales
   </ion-button>
 
-  <div *ngIf="qrCodeUrl" class="qr-container">
+  <div *ngIf="showQRCode" class="qr-container">
     <img [src]="qrCodeUrl" alt="Código QR de la Clase" />
   </div>
 
-  <ion-item-divider color="light">Listado de Estudiantes</ion-item-divider>
 
-  <ion-list>
-    <ion-item *ngFor="let alumno of alumnos" detail="true">
-      <ion-label>
-        <h2>{{ alumno.email }}</h2>
-      </ion-label>
-      <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
-    </ion-item>
-  </ion-list>
 </ion-content>

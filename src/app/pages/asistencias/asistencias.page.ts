@@ -11,7 +11,9 @@ interface SesionAsistencia {
     estado: string;
   }[];
   showAlumnos: boolean;
+  sessionId: string; // Agrega sessionId aquí para que sea reconocido
 }
+
 
 @Component({
   selector: 'app-asistencias',
@@ -40,7 +42,6 @@ export class AsistenciasPage implements OnInit {
       const claseDoc = await this.firestore.collection('classes').doc(this.classId).get().toPromise();
       const claseNombre = (claseDoc?.data() as { nombre?: string })?.nombre || 'Clase Desconocida';
   
-      // Obtener las sesiones en tiempo real desde la subcolección 'sessions' de la clase actual
       this.firestore.collection('classes').doc(this.classId).collection('sessions')
         .snapshotChanges().pipe(
           map(snapshots => snapshots.map(sesionDoc => {
@@ -54,7 +55,6 @@ export class AsistenciasPage implements OnInit {
           const sesionesData: SesionAsistencia[] = [];
   
           for (const sesion of sesiones) {
-            // Consultar la subcolección 'attendance' dentro de la sesión actual
             const asistenciasSnapshot = await this.firestore
               .collection('classes')
               .doc(this.classId)
@@ -83,17 +83,20 @@ export class AsistenciasPage implements OnInit {
                 claseNombre: claseNombre,
                 fecha: sesion.fechaSesion,
                 alumnos: alumnosAsistencia,
-                showAlumnos: false // Inicializa el estado de la visibilidad como colapsado
+                showAlumnos: false,
+                sessionId: sesion.sessionId  // Asegúrate de incluir sessionId aquí
               });
             }
           }
   
-          this.sesiones = sesionesData;
+          // Ordena las sesiones por fecha (de más reciente a más antigua)
+          this.sesiones = sesionesData.sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
         });
     } catch (error) {
       console.error('Error al cargar las asistencias generales:', error);
     }
   }
+  
   
   
 }

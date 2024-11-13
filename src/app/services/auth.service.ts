@@ -19,7 +19,6 @@ export class AuthService {
         private storage: Storage,
         private router: Router
     ) {
-        // Inicializa el almacenamiento
         this.initStorage();
     }
 
@@ -27,13 +26,11 @@ export class AuthService {
         await this.storage.create();
     }
 
-    // Método para obtener el ID del usuario autenticado actual
     async getCurrentUserId(): Promise<string | null> {
         const user = await this.afAuth.currentUser;
         return user ? user.uid : null;
     }
 
-    // Función de registro con rol
     async signUp(email: string, password: string, role: string, name: string) {
         try {
             const result = await this.afAuth.createUserWithEmailAndPassword(email, password);
@@ -43,7 +40,7 @@ export class AuthService {
                 email: email,
                 name: name,
                 role: role,
-                classIds: []  // agregar clases más adelante si es necesario
+                classIds: []
             });
 
             await this.storage.set('userRole', role);
@@ -53,7 +50,6 @@ export class AuthService {
         }
     }
 
-    // Función de inicio de sesión que recupera el rol del usuario
     async signIn(email: string, password: string) {
         try {
             const userCredential = await this.afAuth.signInWithEmailAndPassword(email, password);
@@ -72,18 +68,63 @@ export class AuthService {
         }
     }
 
-    // Cerrar sesión
     async signOut() {
         await this.storage.remove('userRole');
         await this.afAuth.signOut();
         this.router.navigate(['/login']);
     }
 
+    // Función para obtener el siguiente ID de clase incrementado
+    async getNextClassId(): Promise<string> {
+        const counterRef = this.firestore.collection('counters').doc('classCounter');
+
+        try {
+            let nextCount = 0;
+
+            await this.firestore.firestore.runTransaction(async transaction => {
+                const counterDoc = await transaction.get(counterRef.ref);
+
+                if (!counterDoc.exists) {
+                    console.warn("Counter document not found, creating a new one with initial count 1.");
+                    transaction.set(counterRef.ref, { count: 1 });
+                    nextCount = 1;
+                } else {
+                    const counterData = counterDoc.data() as { count: number };
+                    nextCount = (counterData.count || 0) + 1;
+                    transaction.update(counterRef.ref, { count: nextCount });
+                }
+            });
+
+            console.log("Next class ID generated:", nextCount);
+            return nextCount.toString();
+        } catch (error) {
+            console.error("Error al obtener el próximo ID de clase:", error);
+            throw error;
+        }
+    }
+
+    async crearClase(claseNombre: string, profesorId: string): Promise<void> {
+        try {
+            const nextClassId = await this.getNextClassId();
+            await this.firestore.collection('classes').doc(nextClassId).set({
+                nombre: claseNombre,
+                idProfesor: [profesorId],
+                alumnoIds: [],
+                currentSession: null,
+                qrDisponible: false
+            });
+            console.log(`Clase creada con el ID: ${nextClassId}`);
+        } catch (error) {
+            console.error("Error al crear la clase:", error);
+            throw error;
+        }
+    }
+
     async registrarAsistencia(alumnoId: string, classId: string, status: string) {
         const attendanceData = {
             alumnoId: alumnoId,
             classId: classId,
-            date: new Date(),  // Fecha actual
+            date: new Date(),
             status: status
         };
 
