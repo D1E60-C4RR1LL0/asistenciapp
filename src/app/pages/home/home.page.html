@@ -16,16 +16,16 @@
   <!-- Contenido exclusivo para Administrador -->
   <ng-container *ngIf="userRole === 'admin'">
     <ion-button routerLink="/admin-dashboard">Dashboard de Admin</ion-button>
-    <ion-button routerLink="/admin-users">Gestión de Usuarios</ion-button>
+    <ion-button routerLink="/admin-clases">Gestión de Usuarios</ion-button>
   </ng-container>
 
   <!-- Contenido exclusivo para Profesor -->
-  <ng-container *ngIf="userRole === 'profesor' || userRole === 'admin'">
+  <ng-container *ngIf="userRole === 'profesor'">
     <ion-button routerLink="/asignaturas">Asignaturas</ion-button>
   </ng-container>
 
   <!-- Contenido exclusivo para Alumno -->
-  <ng-container *ngIf="userRole === 'alumno' || userRole === 'admin'">
+  <ng-container *ngIf="userRole === 'alumno'">
     <ion-button routerLink="/misclases">MisClases</ion-button>
   </ng-container>
 </ion-content>

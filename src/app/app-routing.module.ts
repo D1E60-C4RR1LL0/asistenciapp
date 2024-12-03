@@ -44,6 +44,22 @@ const routes: Routes = [
   {
     path: 'asistencias/:id',
     loadChildren: () => import('./pages/asistencias/asistencias.module').then( m => m.AsistenciasPageModule)
+  },
+  {
+    path: 'admin-dashboard',
+    loadChildren: () => import('./pages/admin-dashboard/admin-dashboard.module').then( m => m.AdminDashboardPageModule)
+  },
+  {
+    path: 'admin-clases',
+    loadChildren: () => import('./pages/admin-clases/admin-clases.module').then( m => m.AdminClasesPageModule)
+  },
+  {
+    path: 'crearclasemodal',
+    loadChildren: () => import('./pages/crearclasemodal/crearclasemodal.module').then( m => m.CrearclasemodalPageModule)
+  },
+  {
+    path: 'editarclasemodal',
+    loadChildren: () => import('./pages/editarclasemodal/editarclasemodal.module').then( m => m.EditarclasemodalPageModule)
   }
 ];
 

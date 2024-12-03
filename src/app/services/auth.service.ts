@@ -3,10 +3,20 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Storage } from '@ionic/storage-angular';
 import { Router } from '@angular/router';
+import { enableIndexedDbPersistence } from 'firebase/firestore';
+
 
 interface UserData {
     email: string;
     role: string;
+}
+
+// Asistencia Offline 
+interface asistenciasOffline {
+    classId: string;
+    alumnoId: string;
+    date: Date;
+    status: string;
 }
 
 @Injectable({
@@ -20,10 +30,107 @@ export class AuthService {
         private router: Router
     ) {
         this.initStorage();
+    
+        // Detectar cuando el dispositivo recupera conexión
+        window.addEventListener('online', async () => {
+            console.log("Conexión restaurada. Sincronizando datos offline...");
+            await this.syncDataToFirestore();
+        });
+    }
+    private async initStorage() {
+        try {
+            await this.storage.create();
+            console.log("Storage inicializado correctamente.");
+        } catch (error) {
+            console.error("Error al inicializar el almacenamiento:", error);
+        }
+    }
+    
+async syncDataToLocal() {
+    try {
+        // Sincronizar clases
+        const classesSnapshot = await this.firestore.collection('classes').get().toPromise();
+        if (!classesSnapshot || classesSnapshot.empty) {
+            console.warn("No se encontraron clases en la base de datos.");
+            return;
+        }
+
+        const classes = classesSnapshot.docs.map(doc => {
+            const data = doc.data(); // Obtener datos del documento
+            return {
+                id: doc.id, // Agregar el ID del documento como parte del objeto
+                ...(data || {}), // Asegurarse de que data no sea null o undefined
+            };
+        });
+
+        await this.storage.set('classes', classes);
+        console.log("Clases sincronizadas al almacenamiento local.");
+
+        // Sincronizar sesiones para cada clase
+        for (const clase of classes) {
+            const sessionsSnapshot = await this.firestore
+                .collection('classes')
+                .doc(clase.id)
+                .collection('sessions')
+                .get()
+                .toPromise();
+
+            if (!sessionsSnapshot || sessionsSnapshot.empty) {
+                console.warn(`No se encontraron sesiones para la clase ${clase.id}.`);
+                continue;
+            }
+
+            const sessions = sessionsSnapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    ...(data || {}),
+                };
+            });
+
+            await this.storage.set(`sessions_${clase.id}`, sessions);
+            console.log(`Sesiones de la clase ${clase.id} sincronizadas al almacenamiento local.`);
+        }
+
+        // Sincronizar usuarios (alumnos y profesores)
+        const usersSnapshot = await this.firestore.collection('users').get().toPromise();
+        if (!usersSnapshot || usersSnapshot.empty) {
+            console.warn("No se encontraron usuarios en la base de datos.");
+            return;
+        }
+
+        const users = usersSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...(data || {}),
+            };
+        });
+
+        await this.storage.set('users', users);
+        console.log("Usuarios sincronizados al almacenamiento local.");
+    } catch (error) {
+        console.error("Error al sincronizar datos al almacenamiento local:", error);
+    }
+}
+
+
+    // Obtener clases desde el almacenamiento local
+    async getClasses(): Promise<any[]> {
+        const localClasses = await this.storage.get('classes');
+        return localClasses || [];
     }
 
-    private async initStorage() {
-        await this.storage.create();
+    // Obtener sesiones de una clase desde el almacenamiento local
+    async getSessionsForClass(classId: string): Promise<any[]> {
+        const localSessions = await this.storage.get(`sessions_${classId}`);
+        return localSessions || [];
+    }
+
+    // Obtener usuarios desde el almacenamiento local
+    async getUsers(): Promise<any[]> {
+        const localUsers = await this.storage.get('users');
+        return localUsers || [];
     }
 
     async getCurrentUserId(): Promise<string | null> {
@@ -74,65 +181,80 @@ export class AuthService {
         this.router.navigate(['/login']);
     }
 
-    // Función para obtener el siguiente ID de clase incrementado
-    async getNextClassId(): Promise<string> {
-        const counterRef = this.firestore.collection('counters').doc('classCounter');
-
-        try {
-            let nextCount = 0;
-
-            await this.firestore.firestore.runTransaction(async transaction => {
-                const counterDoc = await transaction.get(counterRef.ref);
-
-                if (!counterDoc.exists) {
-                    console.warn("Counter document not found, creating a new one with initial count 1.");
-                    transaction.set(counterRef.ref, { count: 1 });
-                    nextCount = 1;
-                } else {
-                    const counterData = counterDoc.data() as { count: number };
-                    nextCount = (counterData.count || 0) + 1;
-                    transaction.update(counterRef.ref, { count: nextCount });
-                }
-            });
-
-            console.log("Next class ID generated:", nextCount);
-            return nextCount.toString();
-        } catch (error) {
-            console.error("Error al obtener el próximo ID de clase:", error);
-            throw error;
-        }
-    }
-
-    async crearClase(claseNombre: string, profesorId: string): Promise<void> {
-        try {
-            const nextClassId = await this.getNextClassId();
-            await this.firestore.collection('classes').doc(nextClassId).set({
-                nombre: claseNombre,
-                idProfesor: [profesorId],
-                alumnoIds: [],
-                currentSession: null,
-                qrDisponible: false
-            });
-            console.log(`Clase creada con el ID: ${nextClassId}`);
-        } catch (error) {
-            console.error("Error al crear la clase:", error);
-            throw error;
-        }
-    }
-
     async registrarAsistencia(alumnoId: string, classId: string, status: string) {
         const attendanceData = {
-            alumnoId: alumnoId,
-            classId: classId,
+            alumnoId,
+            classId,
             date: new Date(),
-            status: status
+            status,
         };
-
+    
         try {
-            await this.firestore.collection('attendance').add(attendanceData);
-            console.log("Asistencia registrada exitosamente");
+            // Intentar guardar en Firestore
+            await this.firestore.collection('classes')
+                .doc(classId)
+                .collection('sessions')
+                .doc('offline-session')
+                .collection('attendance')
+                .doc(alumnoId)
+                .set(attendanceData);
+            console.log("Asistencia registrada exitosamente online.");
         } catch (error) {
-            console.error("Error al registrar asistencia:", error);
+            // Si falla, guardar offline
+            console.error("Error al registrar asistencia online. Guardando offline...");
+            await this.saveAsistenciaOffline(attendanceData);
         }
+    }
+
+    // Guardar asistencia offline
+    async saveAsistenciaOffline(attendance: asistenciasOffline) {
+        const storedData = await this.storage.get('asistenciasOffline');
+        const attendances: asistenciasOffline[] = storedData ? JSON.parse(storedData) : [];
+        attendances.push(attendance);
+        await this.storage.set('asistenciasOffline', JSON.stringify(attendances));
+        console.log("Asistencia guardada offline.");
+    }
+
+    // Sincronizar asistencias offline con Firestore
+    async syncAsistenciasOffline() {
+        const storedData = await this.storage.get('asistenciasOffline');
+        const attendances: asistenciasOffline[] = storedData ? JSON.parse(storedData) : [];
+
+        for (const attendance of attendances) {
+            try {
+                const claseDoc = await this.firestore.collection('classes').doc(attendance.classId).get().toPromise();
+                const currentSessionId = (claseDoc?.data() as { currentSession?: string }).currentSession;
+
+                if (!currentSessionId) {
+                    console.error(`No hay sesión activa para la clase ${attendance.classId}.`);
+                    continue;
+                }
+
+                await this.firestore
+                    .collection('classes')
+                    .doc(attendance.classId)
+                    .collection('sessions')
+                    .doc(currentSessionId)
+                    .collection('attendance')
+                    .doc(attendance.alumnoId)
+                    .set({
+                        alumnoId: attendance.alumnoId,
+                        date: attendance.date,
+                        status: attendance.status,
+                    });
+                console.log(`Asistencia sincronizada para alumno ${attendance.alumnoId} en sesión ${currentSessionId}.`);
+            } catch (error) {
+                console.error("Error al sincronizar asistencia offline:", error);
+            }
+        }
+
+        await this.storage.remove('asistenciasOffline');
+        console.log("Asistencias offline sincronizadas y limpiadas.");
+    }
+
+    // Sincronizar todos los datos offline con Firestore
+    async syncDataToFirestore() {
+        await this.syncAsistenciasOffline();
+        // Agrega otras sincronizaciones si es necesario
     }
 }

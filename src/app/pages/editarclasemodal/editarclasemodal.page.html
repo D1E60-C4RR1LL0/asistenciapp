@@ -1,0 +1,35 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Editar Clase</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cerrarModal()">Cerrar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-item>
+    <ion-label position="stacked">Nombre de la Clase</ion-label>
+    <ion-input [(ngModel)]="clase.nombre"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="stacked">Profesor</ion-label>
+    <ion-select [(ngModel)]="clase.idProfesor" placeholder="Seleccionar profesor">
+      <ion-select-option *ngFor="let profesor of profesores" [value]="profesor.id">
+        {{ profesor.name }}
+      </ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="stacked">Agregar/Remover Alumnos</ion-label>
+    <ion-select [(ngModel)]="alumnosSeleccionados" multiple>
+      <ion-select-option *ngFor="let alumno of alumnos" [value]="alumno.id">
+        {{ alumno.name }}
+      </ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <ion-button expand="full" (click)="guardarCambios()">Guardar Cambios</ion-button>
+</ion-content>

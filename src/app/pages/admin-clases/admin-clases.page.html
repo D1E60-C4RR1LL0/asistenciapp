@@ -1,0 +1,21 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Gestión de Clases</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-button expand="full" (click)="abrirCrearClaseModal()">Crear Nueva Clase</ion-button>
+
+  <ion-list>
+    <ion-item *ngFor="let clase of clases">
+      <ion-label>
+        <h2>{{ clase.nombre }}</h2>
+        <p>Profesor: {{ clase.profesorNombre }}</p>
+        <p>Alumnos: {{ clase.alumnoIds.length }}</p>
+      </ion-label>
+      <ion-button color="primary" slot="end" (click)="abrirEditarClaseModal(clase)">Editar</ion-button>
+      <ion-button color="danger" slot="end" (click)="eliminarClase(clase.id)">Eliminar</ion-button>
+    </ion-item>
+  </ion-list>
+</ion-content>
