@@ -25,42 +25,78 @@ export class LoginPage implements OnInit {
     });
   }
 
-  ngOnInit() {
-    // Limpia el formulario cada vez que se carga la página de login
-    this.loginForm.reset();
+  ngOnInit(): void {
+    // Inicialización necesaria para el componente
+    console.log('LoginPage inicializado');
   }
+  
 
   async onLogin() {
     if (this.loginForm.valid) {
       const { email, password } = this.loginForm.value;
-
+  
       await this.loadingService.presentLoading('Validando datos');
-
-      try {
-        await this.authService.signIn(email, password);
-        await this.loadingService.dismissLoading();
-        this.router.navigate(['/home']);
-      } catch (error) {
-        await this.loadingService.dismissLoading();
-
-        if (typeof error === 'object' && error !== null && 'code' in error) {
-          const errorCode = (error as { code: string }).code;
-
-          if (errorCode === 'auth/wrong-password') {
-            this.errorMessage = "Contraseña incorrecta. Inténtalo de nuevo.";
-          } else if (errorCode === 'auth/user-not-found') {
-            this.errorMessage = "Usuario no encontrado. Verifica tu correo.";
+  
+      if (navigator.onLine) {
+        try {
+          const userCredential = await this.authService.signIn(email, password);
+          const uid = userCredential.user?.uid;
+      
+          if (uid) {
+            // Obtén información adicional del usuario desde Firestore (si es necesario)
+            const userDoc = await this.authService.getUserData(uid);
+      
+            if (userDoc) {
+              console.log('Usuario autenticado online:', userDoc);
+      
+              // Guardar datos del usuario en localStorage para uso offline
+              await this.authService.saveUserLocally(userDoc, password);
+      
+              await this.loadingService.dismissLoading();
+              if (this.router.url !== '/home') {
+                this.router.navigate(['/home']);
+              }
+            } else {
+              throw new Error('No se pudo obtener información del usuario.');
+            }
           } else {
-            this.errorMessage = "Error en la autenticación. Revisa los datos ingresados.";
+            throw new Error('UID del usuario no disponible.');
           }
-        } else {
-          this.errorMessage = "Ocurrió un error inesperado. Inténtalo nuevamente.";
+        } catch (error) {
+          await this.loadingService.dismissLoading();
+          this.errorMessage = 'Error en la autenticación online. Verifica tus datos.';
+          console.error(error);
+        }
+      }else {
+        // Modo offline
+        try {
+          const localUsers = await this.authService.getUsers(); // Obtener usuarios locales
+          const user = localUsers.find((u: any) => u.email === email);
+      
+          // Validar usuario y contraseña
+          if (user && user.password === password) {
+            console.log('Usuario autenticado offline:', user);
+            await this.loadingService.dismissLoading();
+            if (this.router.url !== '/home') {
+              this.router.navigate(['/home']);
+            }
+          } else {
+            await this.loadingService.dismissLoading();
+            this.errorMessage = 'Correo o contraseña incorrectos en modo offline.';
+          }
+        } catch (error) {
+          await this.loadingService.dismissLoading();
+          this.errorMessage = 'Error en el inicio de sesión offline.';
+          console.error(error);
         }
       }
+      
     } else {
-      this.errorMessage = "Por favor, completa el formulario correctamente.";
+      this.errorMessage = 'Por favor, completa el formulario correctamente.';
     }
   }
+  
+
 
   goToRegister() {
     this.router.navigate(['/register']);
