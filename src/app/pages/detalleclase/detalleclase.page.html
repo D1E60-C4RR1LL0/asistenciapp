@@ -12,9 +12,11 @@
     {{ clase?.qrDisponible ? 'Desactivar Asistencia' : 'Activar Asistencia' }}
   </ion-button>
 
-  <ion-button expand="full" color="secondary" (click)="generarCodigoQR()">
-    {{ showQRCode ? 'Ocultar Código QR' : 'Generar Código QR' }}
-  </ion-button>
+  <ion-button expand="full" color="secondary" 
+            (click)="generarCodigoQR()" 
+            [disabled]="!clase?.qrDisponible">
+  {{ showQRCode ? 'Ocultar Código QR' : 'Generar Código QR' }}
+</ion-button>
 
   <ion-button expand="block" color="secondary" routerLink="/asistencias/{{ classId }}">
     Ver Asistencias Generales
